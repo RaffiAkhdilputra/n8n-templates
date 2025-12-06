@@ -1,0 +1,953 @@
+{
+  "name": "Budget Tracker",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "YOUR_DISCORD_GUILD_ID",
+          "mode": "list",
+          "cachedResultName": "YOUR_SERVER_NAME",
+          "cachedResultUrl": ""
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "YOUR_DISCORD_CHANNEL_ID",
+          "mode": "list",
+          "cachedResultName": "YOUR_CHANNEL_NAME",
+          "cachedResultUrl": ""
+        },
+        "content": "={{ $json.content.parts[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        912,
+        112
+      ],
+      "id": "793f77b0-7cac-4b88-824a-5bb21303cfe3",
+      "name": "Send a message",
+      "webhookId": "REPLACE_WITH_NEW_WEBHOOK_ID",
+      "credentials": {
+        "discordBotApi": {
+          "id": "",
+          "name": "Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7f8dcc32-bdb9-47bf-8cf3-248c1f2e8ae9",
+              "leftValue": "={{ $json.body.original_message.attachments[0] }}",
+              "rightValue": "={{ $json.attachments[0].url }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        288,
+        160
+      ],
+      "id": "b3dc71f0-f4d5-4206-84d9-ee16fe5cf5de",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "receipt-image-receiver",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        64,
+        160
+      ],
+      "id": "06807f06-99b1-48a0-b63a-f8aaec6a0aef",
+      "name": "Webhook",
+      "webhookId": "REPLACE_WITH_NEW_WEBHOOK_ID"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "get",
+        "guildId": {
+          "__rl": true,
+          "value": "YOUR_DISCORD_GUILD_ID",
+          "mode": "list",
+          "cachedResultName": "YOUR_SERVER_NAME",
+          "cachedResultUrl": ""
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "YOUR_DISCORD_CHANNEL_ID",
+          "mode": "list",
+          "cachedResultName": "YOUR_CHANNEL_NAME",
+          "cachedResultUrl": ""
+        },
+        "messageId": "={{ $json.body.message_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        496,
+        32
+      ],
+      "id": "1b4be2ac-219e-404d-9748-34fa89ee3273",
+      "name": "Get a message",
+      "webhookId": "REPLACE_WITH_NEW_WEBHOOK_ID",
+      "credentials": {
+        "discordBotApi": {
+          "id": "",
+          "name": "Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "Analyze this receipt image and output a JSON containing transaction details.\n\nExtraction Rules:\n\n1. date: Extract the transaction date. If multiple dates appear, choose the one corresponding to the time of payment.\n\n2. transaction_recipient\n\n3. transaction_platform: (banks/cash)\n\n4. items: Create a dictionary of purchased items {name: price}. Ignore tax lines or subtotal lines in this section. If the price symbol ($, €, etc.) is present, remove it and store the number as a float.\n\n5. total: The final grand total.\n\nIMPORTANT:\n- If user attachments is out of topics, return \"error: invalid attatchments, please input receipt image!\"\n- always include taxes if it exists (place it inside items dictionary)\n- please ensure the output is valid JSON syntax.\n- IDR price format.\n- date format (dd/mm/yyyy).",
+        "imageUrls": "={{ $json.attachments[0].url }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        688,
+        112
+      ],
+      "id": "c11578b7-44e6-4ee3-a8b7-23bb4c057c75",
+      "name": "Analyze an image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "",
+          "name": "Gemini | Prototype"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "YOUR_DISCORD_GUILD_ID",
+          "mode": "list",
+          "cachedResultName": "YOUR_SERVER_NAME",
+          "cachedResultUrl": ""
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "YOUR_DISCORD_CHANNEL_ID",
+          "mode": "list",
+          "cachedResultName": "YOUR_CHANNEL_NAME",
+          "cachedResultUrl": ""
+        },
+        "content": "=Analyzing Image, please wait... 😁",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        688,
+        -48
+      ],
+      "id": "b781252d-49c3-4d45-b5e9-a9a64747ad92",
+      "name": "Confirmed",
+      "webhookId": "REPLACE_WITH_NEW_WEBHOOK_ID",
+      "credentials": {
+        "discordBotApi": {
+          "id": "",
+          "name": "Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "YOUR_DISCORD_GUILD_ID",
+          "mode": "list",
+          "cachedResultName": "YOUR_SERVER_NAME",
+          "cachedResultUrl": ""
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "YOUR_DISCORD_CHANNEL_ID",
+          "mode": "list",
+          "cachedResultName": "YOUR_CHANNEL_NAME",
+          "cachedResultUrl": ""
+        },
+        "content": "=error: invalid attatchments, please input receipt image!",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        496,
+        240
+      ],
+      "id": "77474c96-14fd-487f-974b-6559a2d3565f",
+      "name": "Error Message",
+      "webhookId": "REPLACE_WITH_NEW_WEBHOOK_ID",
+      "credentials": {
+        "discordBotApi": {
+          "id": "",
+          "name": "Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Tracker",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ $json.date }}",
+            "transaction_recipient": "={{ $json.transaction_recipient }}",
+            "transaction_platform": "={{ $json.transaction_platform }}",
+            "price": "={{ $json.price }}",
+            "items": "={{ $json.name }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "transaction_recipient",
+              "displayName": "transaction_recipient",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "transaction_platform",
+              "displayName": "transaction_platform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "items",
+              "displayName": "items",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "price",
+              "displayName": "price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2112,
+        304
+      ],
+      "id": "7bf37dea-d77d-4c4b-809a-901c2d9bc137",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Budget Tracker Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let raw = $input.first().json.content.parts[0].text;\n\n// Remove all backticks anywhere\nraw = raw.replace(/`+/g, \"\");\n\n// Remove \"json\" if it appears after backticks\nraw = raw.replace(/json\\n?/gi, \"\");\n\n// Trim extra whitespace\nraw = raw.trim();\n\n// Parse safely\nlet data = JSON.parse(raw);\n\n// Convert month number -> month name\nfunction getMonthName(dateString) {\n  const parts = dateString.split(\"/\");\n  const monthNum = parseInt(parts[1], 10);\n\n  const monthNames = [\n    \"January\", \"February\", \"March\", \"April\", \"May\", \"June\",\n    \"July\", \"August\", \"September\", \"October\", \"November\", \"December\"\n  ];\n\n  return monthNames[monthNum - 1];\n}\n\nfunction getYear(dateString) {\n  const parts = dateString.split(\"/\");\n  const year = parseInt(parts[2])\n\n  return year\n}\n\nconst monthName = getMonthName(data.date);\nconst year = getYear(data.date)\n\nlet items = data.items || {};\n\nconst output = Object.entries(items).map(([name, price]) => ({\n  json: {\n    month: monthName,\n    year: year,\n    date: data.date,\n    transaction_recipient: data.transaction_recipient,\n    transaction_platform: data.transaction_platform,\n    name,\n    price,\n    total: data.total,\n  }\n}));\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        304
+      ],
+      "id": "99006694-3845-4f23-b3de-4d397d6b8a0c",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Dashboard",
+          "cachedResultUrl": ""
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "MONTH": "={{ $json.MONTH }}",
+            "TOTAL EXPENSES": "={{ $json.TOTAL_EXPENSES }}",
+            "MONEY SAVED": "={{ $json.MONEY_SAVED }}"
+          },
+          "matchingColumns": [
+            "MONTH"
+          ],
+          "schema": [
+            {
+              "id": "MONTH",
+              "displayName": "MONTH",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Year",
+              "displayName": "Year",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "TOTAL EXPENSES",
+              "displayName": "TOTAL EXPENSES",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "MONEY SAVED",
+              "displayName": "MONEY SAVED",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "MONTHLY EARNINGS",
+              "displayName": "MONTHLY EARNINGS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "5000000",
+              "displayName": "5000000",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2112,
+        464
+      ],
+      "id": "c3d0054d-6c2b-4990-a58f-5ebe84d6cb8e",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Budget Tracker Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_GOOGLE_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Dashboard",
+          "cachedResultUrl": ""
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "MONTH",
+              "lookupValue": "={{ $json.month }}"
+            },
+            {
+              "lookupColumn": "Year",
+              "lookupValue": "={{ $json.year }}"
+            }
+          ]
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "detectAutomatically"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1280,
+        672
+      ],
+      "id": "c1a7c7e1-95e4-4559-ad97-0199e340bc37",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Budget Tracker Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b779d944-b664-47a2-aec0-a93dce7e4cd7",
+              "name": "TOTAL_EXPENSES",
+              "value": "={{ $json['TOTAL EXPENSES'] }}",
+              "type": "number"
+            },
+            {
+              "id": "c3556180-a2f3-4bf6-a44a-e8f4e5d98f84",
+              "name": "MONEY_SAVED",
+              "value": "={{ $json['MONEY SAVED'] }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1616,
+        576
+      ],
+      "id": "fae3f922-5620-4d94-90c7-169d5522f267",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "keep": "lastItems"
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1088,
+        672
+      ],
+      "id": "33c44f48-16c9-4168-92a5-90af07a3ec43",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "import json\n\n_MONTHLY_INCOME = 5000000\n\ndata = _input.first().json\n\n# Read previous totals safely\nTOTAL_EXPENSES = data.get(\"TOTAL_EXPENSES\", 0)\nMONEY_SAVED = data.get(\"MONEY_SAVED\", 0)\n\nSELECTED_MONTH = data.get(\"month\", \"\")\nSELECTED_YEAR = data.get(\"year\", \"\")\n\n# New total from receipt\nnew_total = data.get(\"total\", 0)\n\n# Convert to list if needed\nif not isinstance(TOTAL_EXPENSES, list):\n    TOTAL_EXPENSES = [TOTAL_EXPENSES]\n\nif not isinstance(MONEY_SAVED, list):\n    MONEY_SAVED = [MONEY_SAVED]\n\n# Last previous values\nlast_total = TOTAL_EXPENSES[-1] if TOTAL_EXPENSES else 0\nlast_saved = MONEY_SAVED[-1] if MONEY_SAVED else _MONTHLY_INCOME\n\n# Updated values\nupdated_total = last_total + new_total\n\nif last_saved == 0:\n    updated_saved = _MONTHLY_INCOME - new_total\nelse:\n    updated_saved = last_saved - new_total\n\n# Output\nreturn {\n    \"MONTH\": SELECTED_MONTH,\n    \"YEAR\": SELECTED_YEAR,\n    \"TOTAL_EXPENSES\": updated_total,\n    \"MONEY_SAVED\": updated_saved\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1936,
+        464
+      ],
+      "id": "3dcbcf1a-1bbd-415d-aca7-951cd96b7095",
+      "name": "Code in Python (Beta)"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1776,
+        464
+      ],
+      "id": "134cb6de-3070-4721-8ff8-ce009abd28b3",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7f8dcc32-bdb9-47bf-8cf3-248c1f2e8ae9",
+              "leftValue": "={{ $json.MONTH }}",
+              "rightValue": "={{ $('Limit').item.json.month }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "d67fcc06-23a1-4fae-9529-39643edb6f67",
+              "leftValue": "={{ $json.Year }}",
+              "rightValue": "={{ $('Limit').item.json.year }}",
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        672
+      ],
+      "id": "46bf9fef-13b4-4156-acea-a6a3876e9a84",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "971b8a18-72bc-4223-9af7-3d05cdc63def",
+              "name": "month",
+              "value": "={{ $('Limit').item.json.month }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1616,
+        720
+      ],
+      "id": "c9bb8e7e-b573-4315-a6d5-fa92b791af95",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Dashboard",
+          "cachedResultUrl": ""
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "MONTH": "={{ $('Limit').item.json.month }}",
+            "TOTAL EXPENSES": "0",
+            "MONEY SAVED": "==F1"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "MONTH",
+              "displayName": "MONTH",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TOTAL EXPENSES",
+              "displayName": "TOTAL EXPENSES",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "MONEY SAVED",
+              "displayName": "MONEY SAVED",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "MONTHLY EARNINGS",
+              "displayName": "MONTHLY EARNINGS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "5000000",
+              "displayName": "5000000",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1792,
+        720
+      ],
+      "id": "40a574bf-8087-4868-b457-f137f57228c5",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Budget Tracker Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# **Receive new message**\n---\nconfirming the message type\n",
+        "height": 464,
+        "width": 608
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        16,
+        -16
+      ],
+      "typeVersion": 1,
+      "id": "e0ad929a-73fe-42be-9627-5aa1885fbf6d",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# **Scrape Image**\nusing GeminiAPI",
+        "height": 592,
+        "width": 384
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        656,
+        -144
+      ],
+      "id": "e5ec9987-4e15-410c-915a-d374e739bd46",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "# **Modify Spreadsheet**\nThe new receipt will be recorded in your budget tracker spreadsheet.",
+        "height": 640,
+        "width": 1184
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        256
+      ],
+      "id": "1c6420a5-9f5c-425c-9724-6d7cbbe6a8a2",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Get a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a message": {
+      "main": [
+        [
+          {
+            "node": "Confirmed",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Analyze an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze an image": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirmed": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in Python (Beta)": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in Python (Beta)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "SVDQ4up8pS6fCMDm",
+  "tags": []
+}
